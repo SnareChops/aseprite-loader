@@ -1,4 +1,4 @@
-module github.com/SnareChops/aseprite
+module github.com/SnareChops/aseprite-loader
 
 go 1.22.1
 
