@@ -3,7 +3,7 @@ package output
 import (
 	"image"
 
-	"github.com/SnareChops/aseprite/internal"
+	"github.com/SnareChops/aseprite-loader/internal"
 )
 
 type Frame struct {

@@ -4,8 +4,8 @@ import (
 	"image/color"
 	"testing"
 
-	"github.com/SnareChops/aseprite/internal"
-	"github.com/SnareChops/aseprite/output"
+	"github.com/SnareChops/aseprite-loader/internal"
+	"github.com/SnareChops/aseprite-loader/output"
 )
 
 func TestCreateRGBAImage(t *testing.T) {

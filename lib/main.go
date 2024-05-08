@@ -1,8 +1,8 @@
 package lib
 
 import (
-	"github.com/SnareChops/aseprite/output"
-	"github.com/SnareChops/aseprite/transform"
+	"github.com/SnareChops/aseprite-loader/output"
+	"github.com/SnareChops/aseprite-loader/transform"
 )
 
 type FrameImage output.FrameImage

@@ -4,9 +4,9 @@ import (
 	"image/color"
 	"io"
 
-	"github.com/SnareChops/aseprite/ase"
-	"github.com/SnareChops/aseprite/internal"
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/ase"
+	"github.com/SnareChops/aseprite-loader/internal"
+	"github.com/SnareChops/aseprite-loader/trace"
 )
 
 func transformTags(in io.Reader, out io.Writer) (data []internal.Tag, err error) {

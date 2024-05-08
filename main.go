@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/SnareChops/aseprite/output"
-	"github.com/SnareChops/aseprite/transform"
+	"github.com/SnareChops/aseprite-loader/output"
+	"github.com/SnareChops/aseprite-loader/transform"
 )
 
 func main() {

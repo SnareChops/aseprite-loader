@@ -3,8 +3,8 @@ package transform
 import (
 	"io"
 
-	"github.com/SnareChops/aseprite/ase"
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/ase"
+	"github.com/SnareChops/aseprite-loader/trace"
 )
 
 func transformChunk(in io.Reader, out io.Writer, colorDepth uint16) (data any, err error) {

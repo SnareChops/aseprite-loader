@@ -5,8 +5,8 @@ import (
 	"image/color"
 	"slices"
 
-	"github.com/SnareChops/aseprite/internal"
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/internal"
+	"github.com/SnareChops/aseprite-loader/trace"
 )
 
 func processFrame(pre internal.PreProcessedFrame) (frame internal.Frame, file internal.FileChunks, err error) {

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/trace"
 )
 
 var debug string

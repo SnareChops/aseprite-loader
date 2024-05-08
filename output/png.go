@@ -8,9 +8,8 @@ import (
 	"os"
 	"slices"
 
-	// "github.com/SnareChops/aseprite/blend"
-	"github.com/SnareChops/aseprite/internal"
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/internal"
+	"github.com/SnareChops/aseprite-loader/trace"
 	"hawx.me/code/img/blend"
 )
 

@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/SnareChops/aseprite/ase"
-	"github.com/SnareChops/aseprite/internal"
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/ase"
+	"github.com/SnareChops/aseprite-loader/internal"
+	"github.com/SnareChops/aseprite-loader/trace"
 )
 
 func transformCel(in io.Reader, out io.Writer, chunkSize uint32, colorDepth uint16) (data internal.Cel, err error) {

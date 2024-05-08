@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/SnareChops/aseprite/trace"
+	"github.com/SnareChops/aseprite-loader/trace"
 )
 
 func transform[T any](in io.Reader, out io.Writer) (data T, err error) {
