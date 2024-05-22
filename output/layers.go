@@ -17,6 +17,7 @@ type Layer struct {
 	Name      string
 	BlendMode internal.BlendMode
 	Opacity   byte
+	IsVisible bool
 	Image     image.Image
 }
 
@@ -41,6 +42,7 @@ func LayersForFrame(file internal.File, frame internal.Frame) (layers []Layer) {
 			Name:      layer.Name,
 			BlendMode: layer.BlendMode,
 			Opacity:   layer.Opacity,
+			IsVisible: layer.Flags&internal.LayerFlagVisible != 0,
 			Image:     CreateLayerImage(file, layer),
 		})
 	}
