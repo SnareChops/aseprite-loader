@@ -1,7 +1,6 @@
 package output
 
 import (
-	"errors"
 	"image"
 	"image/color"
 	"image/png"
@@ -48,51 +47,54 @@ func CreateFrameImage(file internal.File, frame internal.Frame) (image.Image, er
 		if layer.Flags&internal.LayerFlagVisible == 0 {
 			continue
 		}
-		// TODO switch on blend mode
-		switch layer.BlendMode {
-		case internal.BlendModeNormal:
-			im = blend.Normal(im, CreateLayerImage(file, layer))
-		case internal.BlendModeMultiply:
-			im = blend.Multiply(im, CreateLayerImage(file, layer))
-		case internal.BlendModeScreen:
-			im = blend.Screen(im, CreateLayerImage(file, layer))
-		case internal.BlendModeOverlay:
-			im = blend.Overlay(im, CreateLayerImage(file, layer))
-		case internal.BlendModeDarken:
-			im = blend.Darken(im, CreateLayerImage(file, layer))
-		case internal.BlendModeLighten:
-			im = blend.Lighten(im, CreateLayerImage(file, layer))
-		case internal.BlendModeColorDodge:
-			im = blend.LinearDodge(im, CreateLayerImage(file, layer))
-		case internal.BlendModeColorBurn:
-			im = blend.LinearBurn(im, CreateLayerImage(file, layer))
-		case internal.BlendModeHardLight:
-			im = blend.HardLight(im, CreateLayerImage(file, layer))
-		case internal.BlendModeSoftLight:
-			im = blend.SoftLight(im, CreateLayerImage(file, layer))
-		case internal.BlendModeDifference:
-			im = blend.Difference(im, CreateLayerImage(file, layer))
-		case internal.BlendModeExclusion:
-			im = blend.Exclusion(im, CreateLayerImage(file, layer))
-		case internal.BlendModeHue:
-			im = blend.Hue(im, CreateLayerImage(file, layer))
-		case internal.BlendModeSaturation:
-			im = blend.Saturation(im, CreateLayerImage(file, layer))
-		case internal.BlendModeColor:
-			im = blend.Color(im, CreateLayerImage(file, layer))
-		case internal.BlendModeLuminosity:
-			im = blend.Luminosity(im, CreateLayerImage(file, layer))
-		case internal.BlendModeAddition:
-			im = blend.Addition(im, CreateLayerImage(file, layer))
-		case internal.BlendModeSubtract:
-			im = blend.Subtraction(im, CreateLayerImage(file, layer))
-		case internal.BlendModeDivide:
-			im = Divide(im, CreateLayerImage(file, layer))
-		default:
-			return nil, errors.New("unknown blend mode")
-		}
+		im = Blend(im, CreateLayerImage(file, layer), layer.BlendMode)
 	}
 	return im, nil
+}
+
+func Blend(dest, src image.Image, mode internal.BlendMode) image.Image {
+	switch mode {
+	case internal.BlendModeNormal:
+		return blend.Normal(dest, src)
+	case internal.BlendModeMultiply:
+		return blend.Multiply(dest, src)
+	case internal.BlendModeScreen:
+		return blend.Screen(dest, src)
+	case internal.BlendModeOverlay:
+		return blend.Overlay(dest, src)
+	case internal.BlendModeDarken:
+		return blend.Darken(dest, src)
+	case internal.BlendModeLighten:
+		return blend.Lighten(dest, src)
+	case internal.BlendModeColorDodge:
+		return blend.LinearDodge(dest, src)
+	case internal.BlendModeColorBurn:
+		return blend.LinearBurn(dest, src)
+	case internal.BlendModeHardLight:
+		return blend.HardLight(dest, src)
+	case internal.BlendModeSoftLight:
+		return blend.SoftLight(dest, src)
+	case internal.BlendModeDifference:
+		return blend.Difference(dest, src)
+	case internal.BlendModeExclusion:
+		return blend.Exclusion(dest, src)
+	case internal.BlendModeHue:
+		return blend.Hue(dest, src)
+	case internal.BlendModeSaturation:
+		return blend.Saturation(dest, src)
+	case internal.BlendModeColor:
+		return blend.Color(dest, src)
+	case internal.BlendModeLuminosity:
+		return blend.Luminosity(dest, src)
+	case internal.BlendModeAddition:
+		return blend.Addition(dest, src)
+	case internal.BlendModeSubtract:
+		return blend.Subtraction(dest, src)
+	case internal.BlendModeDivide:
+		return Divide(dest, src)
+	default:
+		return nil
+	}
 }
 
 func CreateLayerImage(file internal.File, layer internal.Layer) image.Image {
