@@ -69,3 +69,14 @@ func Frames(file internal.File) (frames []FrameImage, err error) {
 	}
 	return
 }
+
+func Smash(layers []Layer) image.Image {
+	var im image.Image = image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	for _, layer := range layers {
+		if !layer.IsVisible {
+			continue
+		}
+		im = Blend(im, layer.Image, layer.BlendMode)
+	}
+	return im
+}
