@@ -52,15 +52,18 @@ func LoadSplitFramesAndLayers(path string) ([]Frame, error) {
 	return output.SplitFramesAndLayers(file), nil
 }
 
-func Smash(layers []Layer) image.Image {
-	var im image.Image = image.NewNRGBA(image.Rect(0, 0, 1, 1))
+func Smash(layers []Layer) (result image.Image) {
 	for _, layer := range layers {
 		if !layer.IsVisible {
 			continue
 		}
-		im = output.Blend(im, layer.Image, layer.BlendMode)
+		if result == nil {
+			result = layer.Image
+			continue
+		}
+		result = output.Blend(result, layer.Image, layer.BlendMode)
 	}
-	return im
+	return
 }
 
 type Sliceable interface {
