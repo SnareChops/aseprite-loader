@@ -69,24 +69,3 @@ func Frames(file internal.File) (frames []FrameImage, err error) {
 	}
 	return
 }
-
-func Smash(layers []Layer) image.Image {
-	var im image.Image = image.NewNRGBA(image.Rect(0, 0, 1, 1))
-	for _, layer := range layers {
-		if !layer.IsVisible {
-			continue
-		}
-		im = Blend(im, layer.Image, layer.BlendMode)
-	}
-	return im
-}
-
-func SmashAndSlice(layers []Layer, gridWidth, gridHeight int) (result []image.Image) {
-	im := Smash(layers)
-	for y := 0; y < im.Bounds().Dy(); y += gridHeight {
-		for x := 0; x < im.Bounds().Dx(); x += gridWidth {
-			result = append(result, im.(*image.NRGBA).SubImage(image.Rect(x, y, x+gridWidth, y+gridHeight)))
-		}
-	}
-	return
-}
