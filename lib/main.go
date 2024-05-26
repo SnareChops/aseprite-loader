@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"image"
 
 	"github.com/SnareChops/aseprite-loader/internal"
@@ -62,12 +63,25 @@ func Smash(layers []Layer) image.Image {
 	return im
 }
 
-func SmashAndSlice(layers []Layer, gridWidth, gridHeight int) (result []image.Image) {
-	im := Smash(layers)
-	for y := 0; y < im.Bounds().Dy(); y += gridHeight {
-		for x := 0; x < im.Bounds().Dx(); x += gridWidth {
-			result = append(result, im.(*image.NRGBA).SubImage(image.Rect(x, y, x+gridWidth, y+gridHeight)))
-		}
+type Sliceable interface {
+	SubImage(r image.Rectangle) image.Image
+}
+
+func Slice(img image.Image, gridWidth, gridHeight int) (result []image.Image, err error) {
+	if gridWidth == 0 || gridHeight == 0 {
+		return nil, errors.New("gridWidth and gridHeight must be greater than 0")
 	}
-	return
+	if sliceable, ok := img.(Sliceable); ok {
+		for y := 0; y < img.Bounds().Dy(); y += gridHeight {
+			for x := 0; x < img.Bounds().Dx(); x += gridWidth {
+				result = append(result, sliceable.SubImage(image.Rect(x, y, x+gridWidth, y+gridHeight)))
+			}
+		}
+		return result, nil
+	}
+	return nil, errors.New("image does not support slicing")
+}
+
+func SmashAndSlice(layers []Layer, gridWidth, gridHeight int) (result []image.Image, err error) {
+	return Slice(Smash(layers), gridWidth, gridHeight)
 }
