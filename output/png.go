@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"log"
 	"os"
 	"slices"
 
@@ -158,7 +157,6 @@ func CreateRGBAImage(file internal.File, layer internal.Layer) image.Image {
 		if x < 0 || y < 0 || x >= file.Width || y >= file.Height {
 			continue
 		}
-		log.Println("set", x, y, c)
 		result.Set(x, y, c)
 	}
 	return result
