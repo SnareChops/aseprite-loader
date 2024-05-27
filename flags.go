@@ -25,4 +25,5 @@ func init() {
 	}
 	input = args[0]
 	trace.Enabled = Trace
+
 }

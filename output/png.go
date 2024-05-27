@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"log"
 	"os"
 	"slices"
 
@@ -152,7 +153,13 @@ func CreateRGBAImage(file internal.File, layer internal.Layer) image.Image {
 	celImage := layer.Cel.Image
 	for i := 0; i < celImage.Width*celImage.Height*4; i += 4 {
 		c := color.NRGBA{celImage.Bytes[i], celImage.Bytes[i+1], celImage.Bytes[i+2], celImage.Bytes[i+3]}
-		result.Set((i/4)%file.Width+layer.Cel.X, (i/4)/file.Width+layer.Cel.Y, c)
+		x := (i/4)%celImage.Width + layer.Cel.X
+		y := (i/4)/celImage.Width + layer.Cel.Y
+		if x < 0 || y < 0 || x >= file.Width || y >= file.Height {
+			continue
+		}
+		log.Println("set", x, y, c)
+		result.Set(x, y, c)
 	}
 	return result
 }
