@@ -24,8 +24,10 @@ type Layer struct {
 }
 
 type FrameImage struct {
-	Duration int
-	Image    image.Image
+	Duration   int
+	Image      image.Image
+	GridWidth  int
+	GridHeight int
 }
 
 func SplitFramesAndLayers(file internal.File) (frames []Frame) {
@@ -63,8 +65,10 @@ func Frames(file internal.File) (frames []FrameImage, err error) {
 			return
 		}
 		frames = append(frames, FrameImage{
-			Duration: int(frame.Duration),
-			Image:    image,
+			Duration:   int(frame.Duration),
+			Image:      image,
+			GridWidth:  int(file.GridWidth),
+			GridHeight: int(file.GridHeight),
 		})
 	}
 	return
