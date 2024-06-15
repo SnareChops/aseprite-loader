@@ -3,7 +3,6 @@ package transform
 import (
 	"fmt"
 	"image/color"
-	"log"
 	"slices"
 
 	"github.com/SnareChops/aseprite-loader/internal"
@@ -29,11 +28,9 @@ func processFirstFrame(pre internal.PreProcessedFrame) (frame internal.Frame, fi
 			oldPalette = &chunk
 			prev = chunk
 		case internal.Layer:
-			log.Println("appending layer")
 			file.Layers = append(file.Layers, chunk)
 			prev = chunk
 		case internal.Cel:
-			log.Println("appending cel")
 			for len(frame.Cels) <= int(chunk.LayerIndex) {
 				frame.Cels = append(frame.Cels, internal.Cel{})
 			}
@@ -68,7 +65,6 @@ func processFirstFrame(pre internal.PreProcessedFrame) (frame internal.Frame, fi
 	if newPalette != nil {
 		file.Palette = processNewPalette(*newPalette)
 	} else {
-		log.Println(file, oldPalette)
 		file.Palette = processOldPalette(*oldPalette)
 	}
 	slices.SortFunc(file.Tilesets, func(a, b internal.Tileset) int {
@@ -77,7 +73,7 @@ func processFirstFrame(pre internal.PreProcessedFrame) (frame internal.Frame, fi
 	return
 }
 
-func processFrame(file internal.File, pre internal.PreProcessedFrame) (frame internal.Frame, err error) {
+func processFrame(pre internal.PreProcessedFrame) (frame internal.Frame, err error) {
 	trace.Log("processFrame")
 	var prev any
 	var userDataIndex int
@@ -91,7 +87,6 @@ func processFrame(file internal.File, pre internal.PreProcessedFrame) (frame int
 		}
 		switch chunk := chunk.(type) {
 		case internal.Cel:
-			log.Println("appending cel")
 			for len(frame.Cels) <= int(chunk.LayerIndex) {
 				frame.Cels = append(frame.Cels, internal.Cel{})
 			}
@@ -147,9 +142,7 @@ func processUserData(userData internal.UserData, prev *any, index int) (err erro
 func processOldPalette(chunk internal.OldPalette) (palette []color.Color) {
 	trace.Log("processOldPalette")
 	for _, packet := range chunk.Packets {
-		for _, color := range packet.Colors {
-			palette = append(palette, color)
-		}
+		palette = append(palette, packet.Colors...)
 	}
 	return
 }
