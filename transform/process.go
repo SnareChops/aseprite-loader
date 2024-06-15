@@ -3,14 +3,15 @@ package transform
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"slices"
 
 	"github.com/SnareChops/aseprite-loader/internal"
 	"github.com/SnareChops/aseprite-loader/trace"
 )
 
-func processFrame(pre internal.PreProcessedFrame) (frame internal.Frame, file internal.FileChunks, err error) {
-	trace.Log("processFrame")
+func processFirstFrame(pre internal.PreProcessedFrame) (frame internal.Frame, file internal.FileChunks, err error) {
+	trace.Log("processFirstFrame")
 	var oldPalette *internal.OldPalette
 	var newPalette *internal.Palette
 	var prev any
@@ -28,10 +29,15 @@ func processFrame(pre internal.PreProcessedFrame) (frame internal.Frame, file in
 			oldPalette = &chunk
 			prev = chunk
 		case internal.Layer:
-			frame.Layers = append(frame.Layers, chunk)
+			log.Println("appending layer")
+			file.Layers = append(file.Layers, chunk)
 			prev = chunk
 		case internal.Cel:
-			frame.Layers[chunk.LayerIndex].Cel = chunk
+			log.Println("appending cel")
+			for len(frame.Cels) <= int(chunk.LayerIndex) {
+				frame.Cels = append(frame.Cels, internal.Cel{})
+			}
+			frame.Cels[chunk.LayerIndex] = chunk
 			prev = chunk
 		case internal.CelExtra:
 			if cel, ok := prev.(internal.Cel); ok {
@@ -62,11 +68,44 @@ func processFrame(pre internal.PreProcessedFrame) (frame internal.Frame, file in
 	if newPalette != nil {
 		file.Palette = processNewPalette(*newPalette)
 	} else {
+		log.Println(file, oldPalette)
 		file.Palette = processOldPalette(*oldPalette)
 	}
 	slices.SortFunc(file.Tilesets, func(a, b internal.Tileset) int {
 		return int(b.ID - a.ID)
 	})
+	return
+}
+
+func processFrame(file internal.File, pre internal.PreProcessedFrame) (frame internal.Frame, err error) {
+	trace.Log("processFrame")
+	var prev any
+	var userDataIndex int
+	for _, chunk := range pre.Chunks {
+		if userData, ok := chunk.(internal.UserData); ok {
+			processUserData(userData, &prev, userDataIndex)
+			userDataIndex++
+			continue
+		} else {
+			userDataIndex = 0
+		}
+		switch chunk := chunk.(type) {
+		case internal.Cel:
+			log.Println("appending cel")
+			for len(frame.Cels) <= int(chunk.LayerIndex) {
+				frame.Cels = append(frame.Cels, internal.Cel{})
+			}
+			frame.Cels[chunk.LayerIndex] = chunk
+			prev = chunk
+		case internal.CelExtra:
+			if cel, ok := prev.(internal.Cel); ok {
+				cel.CelExtra = chunk
+			}
+			prev = chunk
+		default:
+			panic("Unexpected chunk type" + fmt.Sprint(chunk))
+		}
+	}
 	return
 }
 

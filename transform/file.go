@@ -2,6 +2,7 @@ package transform
 
 import (
 	"io"
+	"log"
 	"os"
 
 	"github.com/SnareChops/aseprite-loader/ase"
@@ -50,12 +51,18 @@ func transformFile(in io.Reader, out io.Writer) (file internal.File, err error) 
 		}
 		var frame internal.Frame
 		var fileChunks internal.FileChunks
-		frame, fileChunks, err = processFrame(pre)
-		if err != nil {
-			return
-		}
+		log.Println("Processing frame", i)
 		if i == 0 {
+			frame, fileChunks, err = processFirstFrame(pre)
+			if err != nil {
+				return
+			}
 			file.FileChunks = fileChunks
+		} else {
+			frame, err = processFrame(file, pre)
+			if err != nil {
+				return
+			}
 		}
 		file.Frames = append(file.Frames, frame)
 	}

@@ -25,4 +25,5 @@ type FileChunks struct {
 	Tags          Tags
 	Slices        []Slice
 	Tilesets      []Tileset
+	Layers        []Layer
 }

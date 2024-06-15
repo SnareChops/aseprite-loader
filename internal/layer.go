@@ -47,7 +47,6 @@ type Layer struct {
 	BlendMode     BlendMode
 	Opacity       byte
 	TilesetID     uint32
-	Cel           Cel
 	UserData      UserData
 	Image         image.Image
 }

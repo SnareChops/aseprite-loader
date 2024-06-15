@@ -13,21 +13,19 @@ func TestCreateRGBAImage(t *testing.T) {
 		Width:  2,
 		Height: 2,
 	}
-	layer := internal.Layer{
-		Cel: internal.Cel{
-			Image: internal.CelImage{
-				Width:  2,
-				Height: 2,
-				Bytes: []byte{
-					255, 0, 0, 255,
-					0, 255, 0, 255,
-					0, 0, 255, 255,
-					0, 0, 0, 255,
-				},
+	cel := internal.Cel{
+		Image: internal.CelImage{
+			Width:  2,
+			Height: 2,
+			Bytes: []byte{
+				255, 0, 0, 255,
+				0, 255, 0, 255,
+				0, 0, 255, 255,
+				0, 0, 0, 255,
 			},
 		},
 	}
-	image := output.CreateRGBAImage(file, layer)
+	image := output.CreateRGBAImage(file, cel, 0)
 	if image.Bounds().Dx()*image.Bounds().Dy() != 4 {
 		t.Fatal("expected 4 pixels")
 	}
@@ -50,21 +48,19 @@ func TestCreateGrayscaleImage(t *testing.T) {
 		Width:  2,
 		Height: 2,
 	}
-	layer := internal.Layer{
-		Cel: internal.Cel{
-			Image: internal.CelImage{
-				Width:  2,
-				Height: 2,
-				Bytes: []byte{
-					0, 255,
-					50, 255,
-					100, 255,
-					150, 255,
-				},
+	cel := internal.Cel{
+		Image: internal.CelImage{
+			Width:  2,
+			Height: 2,
+			Bytes: []byte{
+				0, 255,
+				50, 255,
+				100, 255,
+				150, 255,
 			},
 		},
 	}
-	image := output.CreateGrayscaleImage(file, layer)
+	image := output.CreateGrayscaleImage(file, cel, 0)
 	if image.Bounds().Dx()*image.Bounds().Dy() != 4 {
 		t.Fatal("expected 4 pixels")
 	}
@@ -84,12 +80,15 @@ func TestCreateGrayscaleImage(t *testing.T) {
 
 func TestSortLayers(t *testing.T) {
 	layers := []internal.Layer{
-		{Name: "0", Cel: internal.Cel{}},
-		{Name: "1", Cel: internal.Cel{}},
-		{Name: "2", Cel: internal.Cel{}},
-		{Name: "3", Cel: internal.Cel{}},
+		{Name: "0"},
+		{Name: "1"},
+		{Name: "2"},
+		{Name: "3"},
 	}
-	result := output.SortLayers(layers)
+	cels := []internal.Cel{
+		{}, {}, {}, {},
+	}
+	result := output.SortLayers(layers, cels)
 	if len(result) != 4 {
 		t.Fatal("expected 4 layers")
 	}
@@ -112,19 +111,14 @@ func TestCreateLayerImage(t *testing.T) {
 		Width: 1, Height: 1,
 		ColorDepth: 32,
 	}
-	layer := internal.Layer{
-		Flags:     internal.LayerFlagVisible,
-		BlendMode: internal.BlendModeNormal,
-		Opacity:   255,
-		Cel: internal.Cel{
-			X: 0, Y: 0,
-			Image: internal.CelImage{
-				Width: 1, Height: 1,
-				Bytes: []byte{0, 255, 0, 255},
-			},
+	cel := internal.Cel{
+		X: 0, Y: 0,
+		Image: internal.CelImage{
+			Width: 1, Height: 1,
+			Bytes: []byte{0, 255, 0, 255},
 		},
 	}
-	result := output.CreateLayerImage(file, layer)
+	result := output.CreateCelImage(file, cel, 0)
 	if result.Bounds().Dx()*result.Bounds().Dy() != 1 {
 		t.Fatal("expected 1 pixel")
 	}
@@ -144,57 +138,61 @@ func TestCreateFrameImage(t *testing.T) {
 		Width:      2,
 		Height:     2,
 		ColorDepth: 32,
+		FileChunks: internal.FileChunks{
+			Layers: []internal.Layer{
+				{
+					Flags:     internal.LayerFlagVisible,
+					BlendMode: internal.BlendModeNormal,
+					Opacity:   255,
+				}, {
+					Flags:     internal.LayerFlagVisible,
+					BlendMode: internal.BlendModeNormal,
+					Opacity:   255,
+				}, {
+					Flags:     internal.LayerFlagVisible,
+					BlendMode: internal.BlendModeNormal,
+					Opacity:   255,
+				}, {
+					Flags:     internal.LayerFlagVisible,
+					BlendMode: internal.BlendModeNormal,
+					Opacity:   255,
+				},
+			},
+		},
 	}
 	frame := internal.Frame{
-		Layers: []internal.Layer{
+		Cels: []internal.Cel{
 			{
-				Flags:     internal.LayerFlagVisible,
-				BlendMode: internal.BlendModeNormal,
-				Opacity:   255,
-				Cel: internal.Cel{
-					X: 0, Y: 0,
-					Image: internal.CelImage{
-						Width: 2, Height: 2,
-						Bytes: []byte{
-							255, 0, 0, 255,
-							255, 0, 0, 255,
-							255, 0, 0, 255,
-							255, 0, 0, 255,
-						},
+				X: 0, Y: 0,
+				Image: internal.CelImage{
+					Width: 2, Height: 2,
+					Bytes: []byte{
+						255, 0, 0, 255,
+						255, 0, 0, 255,
+						255, 0, 0, 255,
+						255, 0, 0, 255,
 					},
 				},
-			}, {
-				Flags:     internal.LayerFlagVisible,
-				BlendMode: internal.BlendModeNormal,
-				Opacity:   255,
-				Cel: internal.Cel{
-					X: 1, Y: 0,
-					Image: internal.CelImage{
-						Width: 1, Height: 1,
-						Bytes: []byte{0, 255, 0, 255},
-					},
+			},
+			{
+				X: 1, Y: 0,
+				Image: internal.CelImage{
+					Width: 1, Height: 1,
+					Bytes: []byte{0, 255, 0, 255},
 				},
-			}, {
-				Flags:     internal.LayerFlagVisible,
-				BlendMode: internal.BlendModeNormal,
-				Opacity:   255,
-				Cel: internal.Cel{
-					X: 0, Y: 1,
-					Image: internal.CelImage{
-						Width: 1, Height: 1,
-						Bytes: []byte{0, 0, 255, 255},
-					},
+			},
+			{
+				X: 0, Y: 1,
+				Image: internal.CelImage{
+					Width: 1, Height: 1,
+					Bytes: []byte{0, 0, 255, 255},
 				},
-			}, {
-				Flags:     internal.LayerFlagVisible,
-				BlendMode: internal.BlendModeNormal,
-				Opacity:   255,
-				Cel: internal.Cel{
-					X: 1, Y: 1,
-					Image: internal.CelImage{
-						Width: 1, Height: 1,
-						Bytes: []byte{0, 0, 0, 255},
-					},
+			},
+			{
+				X: 1, Y: 1,
+				Image: internal.CelImage{
+					Width: 1, Height: 1,
+					Bytes: []byte{0, 0, 0, 255},
 				},
 			},
 		},

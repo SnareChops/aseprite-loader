@@ -45,13 +45,13 @@ func SplitFramesAndLayers(file internal.File) (frames []Frame) {
 }
 
 func LayersForFrame(file internal.File, frame internal.Frame) (layers []Layer) {
-	for _, layer := range frame.Layers {
+	for i, layer := range file.Layers {
 		layers = append(layers, Layer{
 			Name:      layer.Name,
 			BlendMode: layer.BlendMode,
 			Opacity:   layer.Opacity,
 			IsVisible: layer.Flags&internal.LayerFlagVisible != 0,
-			Image:     CreateLayerImage(file, layer),
+			Image:     CreateCelImage(file, frame.Cels[i], i),
 		})
 	}
 	return

@@ -43,11 +43,11 @@ func createFileImage(file internal.File) (image.Image, error) {
 
 func CreateFrameImage(file internal.File, frame internal.Frame) (image.Image, error) {
 	var im image.Image = image.NewNRGBA(image.Rect(0, 0, file.Width, file.Height))
-	for _, layer := range SortLayers(frame.Layers) {
+	for i, layer := range SortLayers(file.Layers, frame.Cels) {
 		if layer.Flags&internal.LayerFlagVisible == 0 {
 			continue
 		}
-		im = Blend(im, CreateLayerImage(file, layer), layer.BlendMode)
+		im = Blend(im, CreateCelImage(file, frame.Cels[i], i), layer.BlendMode)
 	}
 	return im, nil
 }
@@ -97,63 +97,63 @@ func Blend(dest, src image.Image, mode internal.BlendMode) image.Image {
 	}
 }
 
-func CreateLayerImage(file internal.File, layer internal.Layer) image.Image {
+func CreateCelImage(file internal.File, cel internal.Cel, index int) image.Image {
 	trace.Log("createLayerImage")
-	switch layer.Cel.Type {
+	switch cel.Type {
 	case internal.CelTypeRawImage, internal.CelTypeCompressedImage:
-		return createImageFromRaw(file, layer)
+		return createImageFromRaw(file, cel, index)
 	case internal.CelTypeLinkedCel:
-		return createImageFromLinked(file, layer)
+		return createImageFromLinked(file, cel, index)
 	case internal.CelTypeCompressedTilemap:
-		return createImageFromTilemap(file, layer)
+		return createImageFromTilemap(file, cel, index)
 	default:
 		panic("unknown cel type")
 	}
 }
 
-func createImageFromRaw(file internal.File, layer internal.Layer) image.Image {
+func createImageFromRaw(file internal.File, cel internal.Cel, index int) image.Image {
 	trace.Log("createImageFromRaw")
 	switch file.ColorDepth {
 	case 8:
-		return createPaletteImage(file, layer)
+		return createPaletteImage(file, cel)
 	case 16:
-		return CreateGrayscaleImage(file, layer)
+		return CreateGrayscaleImage(file, cel, index)
 	case 32:
-		return CreateRGBAImage(file, layer)
+		return CreateRGBAImage(file, cel, index)
 	default:
 		panic("unknown color depth")
 	}
 }
 
-func createPaletteImage(file internal.File, layer internal.Layer) image.Image {
+func createPaletteImage(file internal.File, cel internal.Cel) image.Image {
 	trace.Log("createPaletteImage")
 	result := image.NewNRGBA(image.Rect(0, 0, file.Width, file.Height))
-	celImage := layer.Cel.Image
+	celImage := cel.Image
 	for i := range celImage.Width * celImage.Height {
-		result.Set(i%file.Width+layer.Cel.X, i/file.Width+layer.Cel.Y, file.Palette[celImage.Bytes[i]])
+		result.Set(i%file.Width+cel.X, i/file.Width+cel.Y, file.Palette[celImage.Bytes[i]])
 	}
 	return result
 }
 
-func CreateGrayscaleImage(file internal.File, layer internal.Layer) image.Image {
+func CreateGrayscaleImage(file internal.File, cel internal.Cel, index int) image.Image {
 	trace.Log("createGrayscaleImage")
 	result := image.NewNRGBA(image.Rect(0, 0, file.Width, file.Height))
-	celImage := layer.Cel.Image
+	celImage := cel.Image
 	for i := 0; i < celImage.Width*celImage.Height*2; i += 2 {
 		c := color.NRGBA{celImage.Bytes[i], celImage.Bytes[i], celImage.Bytes[i], celImage.Bytes[i+1]}
-		result.Set((i/2)%file.Width+layer.Cel.X, (i/2)/file.Width+layer.Cel.Y, c)
+		result.Set((i/2)%file.Width+cel.X, (i/2)/file.Width+cel.Y, c)
 	}
 	return result
 }
 
-func CreateRGBAImage(file internal.File, layer internal.Layer) image.Image {
+func CreateRGBAImage(file internal.File, cel internal.Cel, index int) image.Image {
 	trace.Log("createRGBAImage")
 	result := image.NewNRGBA(image.Rect(0, 0, file.Width, file.Height))
-	celImage := layer.Cel.Image
+	celImage := cel.Image
 	for i := 0; i < celImage.Width*celImage.Height*4; i += 4 {
 		c := color.NRGBA{celImage.Bytes[i], celImage.Bytes[i+1], celImage.Bytes[i+2], celImage.Bytes[i+3]}
-		x := (i/4)%celImage.Width + layer.Cel.X
-		y := (i/4)/celImage.Width + layer.Cel.Y
+		x := (i/4)%celImage.Width + cel.X
+		y := (i/4)/celImage.Width + cel.Y
 		if x < 0 || y < 0 || x >= file.Width || y >= file.Height {
 			continue
 		}
@@ -162,39 +162,40 @@ func CreateRGBAImage(file internal.File, layer internal.Layer) image.Image {
 	return result
 }
 
-func createImageFromLinked(file internal.File, layer internal.Layer) image.Image {
+func createImageFromLinked(file internal.File, cel internal.Cel, index int) image.Image {
 	trace.Log("createImageFromLinked")
-	return file.Frames[layer.Cel.Link].Layers[layer.Cel.LayerIndex].Image
+	return CreateCelImage(file, file.Frames[cel.Link].Cels[cel.LayerIndex], index)
 }
 
-func createImageFromTilemap(file internal.File, layer internal.Layer) image.Image {
+func createImageFromTilemap(file internal.File, cel internal.Cel, index int) image.Image {
 	trace.Log("createImageFromTilemap")
 	result := image.NewNRGBA(image.Rect(0, 0, file.Width, file.Height))
-	tilemap := layer.Cel.Tilemap
-	tileset := file.Tilesets[layer.TilesetID]
-	for i, t := range layer.Cel.Tilemap.Tiles {
+	tilemap := cel.Tilemap
+	tileset := file.Tilesets[file.Layers[index].TilesetID]
+	for i, t := range cel.Tilemap.Tiles {
 		tile := tileset.Tiles[t&tilemap.TileIDMask]
 		for y := range tile.Image.Bounds().Dy() {
 			for x := range tile.Image.Bounds().Dx() {
-				result.Set(i%file.Width+layer.Cel.X+x, i/file.Width+layer.Cel.Y+y, tile.Image.At(x, y))
+				result.Set(i%file.Width+cel.X+x, i/file.Width+cel.Y+y, tile.Image.At(x, y))
 			}
 		}
 	}
 	return result
 }
 
-func SortLayers(layers []internal.Layer) []internal.Layer {
+func SortLayers(layers []internal.Layer, cels []internal.Cel) []internal.Layer {
 	type indexed struct {
 		index int
 		layer internal.Layer
+		cel   internal.Cel
 	}
 	pre := make([]indexed, len(layers))
 	for i, layer := range layers {
-		pre[i] = indexed{i, layer}
+		pre[i] = indexed{i, layer, cels[i]}
 	}
 	slices.SortStableFunc(pre, func(a, b indexed) int {
-		av := a.index + int(a.layer.Cel.ZIndex)
-		bv := b.index + int(b.layer.Cel.ZIndex)
+		av := a.index + int(a.cel.ZIndex)
+		bv := b.index + int(b.cel.ZIndex)
 		return av - bv
 	})
 	result := make([]internal.Layer, len(pre))

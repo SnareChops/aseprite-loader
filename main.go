@@ -25,4 +25,10 @@ func main() {
 			panic(err)
 		}
 	}
+	if gif != "" {
+		err = output.Gif(file, gif)
+		if err != nil {
+			panic(err)
+		}
+	}
 }

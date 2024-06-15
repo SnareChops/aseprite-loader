@@ -2,7 +2,7 @@ package internal
 
 type Frame struct {
 	Duration uint16
-	Layers   []Layer
+	Cels     []Cel
 }
 
 type PreProcessedFrame struct {
