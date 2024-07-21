@@ -47,8 +47,8 @@ func processFirstFrame(pre internal.PreProcessedFrame) (frame internal.Frame, fi
 		case internal.ExternalFiles:
 			file.ExternalFiles = chunk
 			prev = chunk
-		case internal.Tag:
-			file.Tags = append(file.Tags, chunk)
+		case []internal.Tag:
+			file.Tags = chunk
 			prev = chunk
 		case internal.Palette:
 			newPalette = &chunk

@@ -18,12 +18,12 @@ func transformTags(in io.Reader, out io.Writer) (data []internal.Tag, err error)
 	}
 	for range tagsHeader.Tags {
 		var tag ase.Tag
-		_, err = transform[ase.Tag](in, out)
+		tag, err = transform[ase.Tag](in, out)
 		if err != nil {
 			return
 		}
 		var name ase.String
-		_, err = transformString(in, out)
+		name, err = transformString(in, out)
 		if err != nil {
 			return
 		}
