@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"log"
 	"os"
 	"slices"
 
@@ -193,11 +192,7 @@ func SortLayers(layers []internal.Layer, cels []internal.Cel) []internal.Layer {
 		cel   internal.Cel
 	}
 	pre := make([]indexed, len(layers))
-	log.Println("layers length", len(layers))
-	log.Println("pre length", len(pre))
-	log.Println("cels length", len(cels))
 	for i, layer := range layers {
-		log.Println("i", i)
 		if len(cels) > i {
 			pre[i] = indexed{i, layer, cels[i]}
 		} else {
