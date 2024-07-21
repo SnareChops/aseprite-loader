@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"log"
 	"os"
 	"slices"
 
@@ -47,7 +48,9 @@ func CreateFrameImage(file internal.File, frame internal.Frame) (image.Image, er
 		if layer.Flags&internal.LayerFlagVisible == 0 {
 			continue
 		}
-		im = Blend(im, CreateCelImage(file, frame.Cels[i], i), layer.BlendMode)
+		if len(frame.Cels) > i {
+			im = Blend(im, CreateCelImage(file, frame.Cels[i], i), layer.BlendMode)
+		}
 	}
 	return im, nil
 }
@@ -190,8 +193,16 @@ func SortLayers(layers []internal.Layer, cels []internal.Cel) []internal.Layer {
 		cel   internal.Cel
 	}
 	pre := make([]indexed, len(layers))
+	log.Println("layers length", len(layers))
+	log.Println("pre length", len(pre))
+	log.Println("cels length", len(cels))
 	for i, layer := range layers {
-		pre[i] = indexed{i, layer, cels[i]}
+		log.Println("i", i)
+		if len(cels) > i {
+			pre[i] = indexed{i, layer, cels[i]}
+		} else {
+			pre[i] = indexed{i, layer, internal.Cel{}}
+		}
 	}
 	slices.SortStableFunc(pre, func(a, b indexed) int {
 		av := a.index + int(a.cel.ZIndex)
