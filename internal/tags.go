@@ -9,7 +9,7 @@ type Tag struct {
 	From          uint16
 	To            uint16
 	LoopDirection byte
-	Repeat        byte
+	Repeat        uint16
 	Color         color.Color
 	UserData      UserData
 }
