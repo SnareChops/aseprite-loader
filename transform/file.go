@@ -62,6 +62,7 @@ func transformFile(in io.Reader, out io.Writer) (file internal.File, err error) 
 				return
 			}
 		}
+		frame.Duration = pre.Duration
 		file.Frames = append(file.Frames, frame)
 	}
 	return
