@@ -11,6 +11,7 @@ import (
 
 type FrameImage = output.FrameImage
 type Frame = output.Frame
+type Tag = output.Tag
 type Layer = output.Layer
 type BlendMode = internal.BlendMode
 
@@ -36,20 +37,22 @@ const (
 	BlendModeDivide     = internal.BlendModeDivide
 )
 
-func LoadFrames(path string) ([]FrameImage, error) {
+func LoadFrames(path string) ([]FrameImage, []Tag, error) {
 	file, err := transform.File(path, "")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	return output.Frames(file)
 }
 
-func LoadSplitFramesAndLayers(path string) ([]Frame, error) {
-	file, err := transform.File(path, "")
+func LoadSplitFramesAndLayers(path string) (frames []Frame, tags []Tag, err error) {
+	var file internal.File
+	file, err = transform.File(path, "")
 	if err != nil {
-		return nil, err
+		return
 	}
-	return output.SplitFramesAndLayers(file), nil
+	frames, tags = output.SplitFramesAndLayers(file)
+	return
 }
 
 func Smash(layers []Layer) (result image.Image) {

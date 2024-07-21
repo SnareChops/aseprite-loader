@@ -6,6 +6,15 @@ import (
 	"github.com/SnareChops/aseprite-loader/internal"
 )
 
+type LoopDirection byte
+
+const (
+	LoopDirectionForward         LoopDirection = 0
+	LoopDirectionReverse         LoopDirection = 1
+	LoopDirectionPingPong        LoopDirection = 2
+	LoopDirectionPingPongReverse LoopDirection = 3
+)
+
 type Frame struct {
 	Width      int
 	Height     int
@@ -13,6 +22,14 @@ type Frame struct {
 	GridWidth  int
 	GridHeight int
 	Layers     []Layer
+}
+
+type Tag struct {
+	Name string
+	From int
+	To   int
+	LoopDirection
+	Repeat int
 }
 
 type Layer struct {
@@ -30,7 +47,7 @@ type FrameImage struct {
 	GridHeight int
 }
 
-func SplitFramesAndLayers(file internal.File) (frames []Frame) {
+func SplitFramesAndLayers(file internal.File) (frames []Frame, tags []Tag) {
 	for _, frame := range file.Frames {
 		frames = append(frames, Frame{
 			Width:      file.Width,
@@ -41,6 +58,7 @@ func SplitFramesAndLayers(file internal.File) (frames []Frame) {
 			Layers:     LayersForFrame(file, frame),
 		})
 	}
+	tags = Tags(file)
 	return
 }
 
@@ -57,7 +75,7 @@ func LayersForFrame(file internal.File, frame internal.Frame) (layers []Layer) {
 	return
 }
 
-func Frames(file internal.File) (frames []FrameImage, err error) {
+func Frames(file internal.File) (frames []FrameImage, tags []Tag, err error) {
 	for _, frame := range file.Frames {
 		var image image.Image
 		image, err = CreateFrameImage(file, frame)
@@ -69,6 +87,20 @@ func Frames(file internal.File) (frames []FrameImage, err error) {
 			Image:      image,
 			GridWidth:  int(file.GridWidth),
 			GridHeight: int(file.GridHeight),
+		})
+	}
+	tags = Tags(file)
+	return
+}
+
+func Tags(file internal.File) (tags []Tag) {
+	for _, tag := range file.Tags {
+		tags = append(tags, Tag{
+			Name:          tag.Name,
+			From:          int(tag.From),
+			To:            int(tag.To),
+			LoopDirection: LoopDirection(tag.LoopDirection),
+			Repeat:        int(tag.Repeat),
 		})
 	}
 	return
