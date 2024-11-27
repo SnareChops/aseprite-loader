@@ -6,5 +6,5 @@ type IndexedPixel byte
 
 type String struct {
 	Length uint16 `label:"Length"`
-	Value  string
+	Value  string `label:"Value"`
 }

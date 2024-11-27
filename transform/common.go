@@ -26,25 +26,35 @@ func transformString(in io.Reader, out io.Writer) (data ase.String, err error) {
 }
 
 func transformBytes[T int8 | int16 | int32 | int64 | int | uint8 | uint16 | uint32 | uint64 | uint](in io.Reader, out io.Writer, length T) (data []byte, err error) {
-	trace.Log("transformBytes")
+	trace.Log("transformBytes", length)
 	data = make([]byte, length)
-	_, err = in.Read(data)
-	if err != nil {
-		return
+	var total T = 0
+	for total < length {
+		var n int
+		n, err = in.Read(data[total:])
+		if err != nil {
+			return
+		}
+		total += T(n)
 	}
 	err = write(out, data)
 	return
 }
 
 func decompress(compressed []byte) (data []byte, err error) {
-	trace.Log("decompress")
+	trace.Log("decompress", len(compressed))
 	reader := bytes.NewReader(compressed)
+	trace.Log("reader length", reader.Len())
 	var zr io.ReadCloser
 	zr, err = zlib.NewReader(reader)
 	if err != nil {
+		panic(err)
 		return
 	}
 	defer zr.Close()
 	data, err = io.ReadAll(zr)
+	if err != nil {
+		panic(err)
+	}
 	return
 }

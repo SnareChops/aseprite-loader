@@ -28,7 +28,7 @@ type Element struct {
 	Size       Size
 	Rect       Rect
 	Vector     []Element
-	Properties map[uint32][]Property
+	Properties []Property
 	UUID       [16]byte
 }
 

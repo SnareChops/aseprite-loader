@@ -34,6 +34,7 @@ func transformUserData(in io.Reader, out io.Writer) (data internal.UserData, err
 		data.Color = color.NRGBA{clr[0], clr[1], clr[2], clr[3]}
 	}
 	if userData.Flags&0x4 == 0x4 {
+		data.Properties = internal.PropertyMap{}
 		var header ase.UserDataPropertyMaps
 		header, err = transform[ase.UserDataPropertyMaps](in, out)
 		if err != nil {
@@ -167,10 +168,7 @@ func transformElement(in io.Reader, out io.Writer, typ uint16) (data internal.El
 	case 0x11:
 		data.Vector, err = transformVector(in, out)
 	case 0x12:
-		var key uint32
-		var properties []internal.Property
-		key, properties, err = transformPropertyMap(in, out)
-		data.Properties[key] = properties
+		data.Properties, err = transformNestedPropertyMap(in, out)
 	case 0x013:
 		data.UUID, err = transform[[16]byte](in, out)
 	default:
@@ -193,6 +191,24 @@ func transformVector(in io.Reader, out io.Writer) (data []internal.Element, err 
 			return
 		}
 		data = append(data, element)
+	}
+	return
+}
+
+func transformNestedPropertyMap(in io.Reader, out io.Writer) (data []internal.Property, err error) {
+	trace.Log("transformNestedPropertyMap")
+	var count uint32
+	count, err = transform[uint32](in, out)
+	if err != nil {
+		return
+	}
+	for range count {
+		var property internal.Property
+		property, err = transformProperty(in, out)
+		if err != nil {
+			return
+		}
+		data = append(data, property)
 	}
 	return
 }

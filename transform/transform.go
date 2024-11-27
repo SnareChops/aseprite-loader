@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 
 	"github.com/SnareChops/aseprite-loader/trace"
 )
@@ -43,7 +42,7 @@ func write[T any](out io.Writer, data T) (err error) {
 			if err != nil {
 				panic(err)
 			}
-			err = writeBytes(out, label, buffer.Bytes())
+			err = writeType(out, label, buffer.Bytes(), field.Type)
 		}
 	default:
 		buffer := new(bytes.Buffer)
@@ -56,17 +55,13 @@ func write[T any](out io.Writer, data T) (err error) {
 	return
 }
 
-func writeBytes(out io.Writer, label string, data []byte) (err error) {
-	line := []string{}
-	for _, b := range data {
-		line = append(line, fmt.Sprintf("0x%02x", b))
+func writeCustom(out io.Writer, data []byte, label string) (err error) {
+	buffer := new(bytes.Buffer)
+	err = binary.Write(buffer, binary.LittleEndian, data)
+	if err != nil {
+		panic(err)
 	}
-	if label != "" {
-		line = append(line, "// "+label)
-	} else {
-		line = append(line, "")
-	}
-	_, err = out.Write(append([]byte(strings.Join(line, ", ")), '\n'))
+	err = writeBytes(out, label, buffer.Bytes())
 	return
 }
 
@@ -101,6 +96,15 @@ func getBytes(v reflect.Value) (value []byte, err error) {
 		}
 	case reflect.String:
 		err = binary.Write(buffer, binary.LittleEndian, []byte(v.String()))
+	case reflect.Struct:
+		for i := 0; i < v.NumField(); i++ {
+			var val []byte
+			val, err = getBytes(v.Field(i))
+			if err != nil {
+				return
+			}
+			_, err = buffer.Write(val)
+		}
 	default:
 		err = fmt.Errorf("unsupported type %s", v.Kind().String())
 	}
